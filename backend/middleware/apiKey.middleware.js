@@ -1,6 +1,6 @@
 module.exports = (req, res, next) =>{
 
-    const header = req.header.authorization;
+    const header = req.headers.authorization;
 
     if(!header) return res.status(401).send("API key required");
     const apiKey = header.split(" ")[1];

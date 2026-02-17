@@ -10,7 +10,7 @@ exports.isTokenRevoked = (token) => revokedTokens.includes(token);
 exports.register = async (req, res) => {
     const { email, password } = req.body;
 
-    if (!email || !password) return res.status(400).json({ message: "Email and password required" });
+    if (!email || !password) return res.status(401).json({ message: "Email and password required" });
 
     const exists = users.find((u) => u.email === email);
     if (exists) return res.status(409).json({ message: "User already exists" });
