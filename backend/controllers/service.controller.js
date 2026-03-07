@@ -9,7 +9,7 @@ let Services = [
 exports.getAllServices = (req, res) =>{
     res.json(Services);
 }
-exports.creataServices = (req, res) =>{
+exports.createServices = (req, res) =>{
     const { name, description } = req.body;
 
     const newService ={

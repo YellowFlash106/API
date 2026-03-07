@@ -5,6 +5,6 @@ const serviceController = require("../controllers/service.controller");
 const authMiddleware = require("../middleware/auth.middleware");
 
 router.get("/", authMiddleware, serviceController.getAllServices);
-router.post("/", authMiddleware, serviceController.creataServices);
+router.post("/", authMiddleware, serviceController.createServices);
 
 module.exports = router;

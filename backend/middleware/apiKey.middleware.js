@@ -6,7 +6,8 @@ module.exports = (req, res, next) =>{
     const apiKey = header.split(" ")[1];
 
     if(apiKey !== "test-api-key"){
-        return res.status(403).send("Invalid apikey");
+        return res.status(403).send("Invalid api key");
     }
     next();
 }
+module.exports.default = module.exports;

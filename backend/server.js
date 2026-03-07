@@ -7,14 +7,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const authRoutes = require("./routes/auth.routes");
-const serviceRouters = require("./routes/service.routes");
-const apiKeyMiddleware = require("./middleware/apiKey.middleware");
+const authMod = require("./routes/auth.routes");
+const authRoutes = authMod && authMod.default ? authMod.default : authMod;
+const serviceMod = require("./routes/service.routes");
+const serviceRouters = serviceMod && serviceMod.default ? serviceMod.default : serviceMod;
+const _apiKeyMiddleware = require("./middleware/apiKey.middleware");
+const apiKeyMiddleware = _apiKeyMiddleware && _apiKeyMiddleware.default ? _apiKeyMiddleware.default : _apiKeyMiddleware;
 const { runExampleServices } = require("./services/example.service");
 
 
 app.use("/auth", authRoutes);
 app.use("/services", serviceRouters);
+app.use(apiKeyMiddleware);
 
 
 app.get("/api/example", apiKeyMiddleware, runExampleServices);
