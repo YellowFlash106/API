@@ -33,3 +33,7 @@ npm start
 ```
 
 The server listens on `process.env.PORT` or `5000`.
+
+
+<!-- 
+see when you add any schema in prisma then don't forgot to do this npx prisma db push -->

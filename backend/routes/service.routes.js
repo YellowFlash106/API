@@ -1,11 +1,12 @@
-(function () {
-	const express = require("express");
-	const router = express.Router();
+const express = require('express');
+const router = express.Router();
 
-	// Example service routes - add your handlers in ../controllers/service.controller.js
-	const serviceController = require("../controllers/service.controller");
+const serviceController = require('../controllers/service.controller.js');
+const authMiddleware = require('../middleware/auth.middleware.js');
 
-	router.get("/", serviceController && serviceController.getAll ? serviceController.getAll : (req, res) => res.json({ services: [] }));
+router.get("/", authMiddleware, serviceController.getAllServices);
+router.post("/", authMiddleware, serviceController.createService);
+router.post("/:id/request", authMiddleware, serviceController.requestService);
+router.post("/:id/approve", authMiddleware, serviceController.approveService);
 
-	module.exports = router;
-})();
+module.exports = router;
