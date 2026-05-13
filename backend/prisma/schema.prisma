@@ -49,5 +49,6 @@ model ServiceAccess {
   user    User    @relation(fields: [userId], references: [id])
   service Service @relation(fields: [serviceId], references: [id])
 
+  approved  Boolean  @default(false)
   createdAt DateTime @default(now())
 }

@@ -28,10 +28,17 @@ exports.createService = async (req, res) =>{
 }
 
 exports.requestService = async (req, res) =>{
-
-    const userId = req.body.id;
+    const userId = req.body.userId ?? req.body.id;
     const serviceId = parseInt(req.params.id);
 
+    if (!userId) {
+        return res.status(400).json({ message: "userId is required in body" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
 
     const request = await prisma.serviceAccess.create({
         data: {
@@ -44,8 +51,17 @@ exports.requestService = async (req, res) =>{
 
 exports.approveService = async (req, res) =>{
 
-    const {userId }= req.body.id;
+    const userId = req.body.userId ?? req.body.id;
     const serviceId = parseInt(req.params.id);
+
+    if (!userId) {
+        return res.status(400).json({ message: "userId is required in body" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
 
     // if (req.user.role !== "admin") {
     //   return res.status(403).send("Only admin allowed");
