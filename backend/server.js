@@ -20,7 +20,6 @@ app.use("/auth", authMod);
 app.use("/services", serviceMod);
 app.use("/apikeys", apiKeyRoutes);
 app.use("/api/services", serviceRoutes);
-app.use(apiKeyMiddleware);
 
 
 app.get("/api/example", apiKeyMiddleware, runExampleServices);
