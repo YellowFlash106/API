@@ -29,6 +29,7 @@ model Service {
   endpoint        String
   createdAt       DateTime        @default(now())
   serviceAccesses ServiceAccess[]
+  requestLogs RequestLog[]  
 }
 
 model ApiKey {
@@ -38,6 +39,7 @@ model ApiKey {
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   revoked   Boolean  @default(false)
+  requestLogs     RequestLog[] 
 }
 
 model ServiceAccess {
@@ -51,4 +53,15 @@ model ServiceAccess {
 
   approved  Boolean  @default(false)
   createdAt DateTime @default(now())
+}
+
+model RequestLog {
+  id        Int      @id @default(autoincrement())
+  apiKeyId  Int
+  serviceId Int
+  status    Int
+  createdAt DateTime @default(now())
+
+  apiKey    ApiKey   @relation(fields: [apiKeyId], references: [id])
+  service   Service  @relation(fields: [serviceId], references: [id])
 }

@@ -13,12 +13,14 @@ const apiKeyRoutes = require("./routes/apiKey.routes.js");
 const authMod = require("./routes/auth.routes");
 const serviceMod = require("./routes/service.routes");
 const apiKeyMiddleware = require("./middleware/apiKey.middleware");
+const loggingMiddleware = require("./middleware/logging.middleware");
 const { runExampleServices } = require("./services/example.service");
 
 
 app.use("/auth", authMod);
 app.use("/services", serviceMod);
 app.use("/apikeys", apiKeyRoutes);
+app.use("/api", loggingMiddleware);
 app.use("/api/services", serviceRoutes);
 
 

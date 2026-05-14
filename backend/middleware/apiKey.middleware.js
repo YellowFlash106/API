@@ -9,21 +9,21 @@ module.exports = async (req, res, next) =>{
 
     const apiKey = header.split(" ")[1];
 
+    const service = await prisma.service.findFirst({
+        where:{
+            endpoint : req.baseUrl + req.path
+        }
+    })
+    if(!service){
+        return res.status(404).send("Service not found");
+    }
     const keys = await prisma.apiKey.findMany({
         where : {revoked : false}
     });
 
     for(let key of keys){
-        const service = await prisma.service.findFirst({
-            where:{
-                endpoint : req.baseUrl
-            }
-        })
-        if(!service){
-            return res.status(404).send("Service not found");
-        }
 
-        const access = await prisma.service.findFirst({
+        const access = await prisma.serviceAccess.findFirst({
             where:{
                 userId: key.userId,
                 serviceId: service.id,
@@ -38,6 +38,7 @@ module.exports = async (req, res, next) =>{
 
         if(match){
             req.apiKey = key;
+            req.service = service;
             return next();
         }
     }
