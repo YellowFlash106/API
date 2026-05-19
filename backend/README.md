@@ -36,6 +36,23 @@ The server listens on `process.env.PORT` or `5000`.
 
 
 <!-- 
+Current Level status
+
+Authentication ✔
+Authorization ✔
+API Gateway ✔
+Rate Limiting ✔
+Redis ✔
+Logging ✔
+Permissions ✔
+
+Auth ✔
+API keys ✔
+Permissions ✔
+Logging ✔
+Rate limiting ✔
+
+
 reg 
 login get jwt as "fklasdflksd"
 now go to url POST http://localhost:5000/services and in headers after bearer put jwt and in body put like 
