@@ -7,15 +7,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const prisma = require("./utils/prisma.js");
-const serviceRoutes = require("./routes/service.routes.js");
-const apiKeyRoutes = require("./routes/apiKey.routes.js");
-const authMod = require("./routes/auth.routes");
-const serviceMod = require("./routes/service.routes");
-const apiKeyMiddleware = require("./middleware/apiKey.middleware");
-const rateLimitMiddleware = require("./middleware/rateLimit.middleware");
-const loggingMiddleware = require("./middleware/logging.middleware");
-const { runExampleServices } = require("./services/example.service");
+const prisma = require("./src/utils/prisma.js");
+const serviceRoutes = require("./src/routes/service.routes.js");
+const apiKeyRoutes = require("./src/routes/apiKey.routes.js");
+const authMod = require("./src/routes/auth.routes");
+const serviceMod = require("./src/routes/service.routes");
+const analyticsRoutes = require("./src/routes/analytics.routes");
+const apiKeyMiddleware = require("./src/middleware/apiKey.middleware");
+const rateLimitMiddleware = require("./src/middleware/rateLimit.middleware");
+const loggingMiddleware = require("./src/middleware/logging.middleware");
+const { runExampleServices } = require("./src/services/example.service");
 
 
 app.use("/auth", authMod);
@@ -24,6 +25,7 @@ app.use("/apikeys", apiKeyRoutes);
 app.use("/api", loggingMiddleware);
 app.use("/api", rateLimitMiddleware);
 app.use("/api/services", serviceRoutes);
+app.use("/analytics", analyticsRoutes);
 
 
 app.get("/api/example", apiKeyMiddleware, runExampleServices);
