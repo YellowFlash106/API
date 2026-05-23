@@ -5,7 +5,7 @@ module.exports = async (req, res, next) =>{
 
     res.send = async function (body) {
         try {
-            if(req.apiKey) {
+            if(req.apiKey && req.service) {
                 await prisma.requestLog.create({
                     data:{
                         apiKeyId: req.apiKey.id,
