@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 
 const Login = () =>{
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
     const handleLogin = async (e) =>{
         e.preventDefault();
@@ -14,11 +16,10 @@ const Login = () =>{
                 password
             })
 
-            localStorage.setItem("jwtToken", res.data.token);
             localStorage.setItem("token", res.data.token);
 
             alert("Login successful");
-            window.location.href = "/";
+            navigate("/");
         
         } catch (error) {
             console.log(error);

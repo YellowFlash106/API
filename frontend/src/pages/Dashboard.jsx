@@ -1,129 +1,109 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid
+} from "recharts";
 
-const DashBoard = () =>{
-    const [overview, setOverview] = useState(null);
-    const [services, setServices] = useState([]);
-        const [token, setToken] = useState(() => localStorage.getItem("jwtToken") || localStorage.getItem("token") || "");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+const Dashboard = () => {
+  const [overview, setOverview] = useState(null);
+  const [daily, setDaily] = useState([]);
+  const [services, setServices] = useState([]);
 
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+  // protect route
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) navigate("/login");
+  }, [navigate]);
+
+  useEffect(() => {
     const fetchData = async () => {
-        if (!token) {
-            setError("Add a JWT token to load analytics.");
-            return;
-        }
+      try {
+        const [overviewRes, dailyRes, serviceRes] = await Promise.all([
+          api.get("/analytics/overview"),
+          api.get("/analytics/daily"),
+          api.get("/analytics/services")
+        ]);
 
-        localStorage.setItem("jwtToken", token);
-        localStorage.setItem("token", token);
+        setOverview(overviewRes.data);
+        setDaily(dailyRes.data);
+        setServices(serviceRes.data);
 
-        setLoading(true);
-        setError("");
-
-        try {
-            const [overviewRes, servicesRes] = await Promise.all([
-                api.get(`${API_BASE_URL}/analytics/overview`),
-                api.get(`${API_BASE_URL}/analytics/services`),
-            ]);
-
-            setOverview(overviewRes.data);
-            setServices(servicesRes.data);
-        } catch (err) {
-            setError(err?.response?.data?.error || err?.response?.data?.message || err.message || "Failed to load analytics");
-        } finally {
-            setLoading(false);
-        }
+      } catch (error) {
+        console.error(error);
+      }
     };
 
-    useEffect(() => {
-        if (token) {
-            fetchData();
-        }
-    }, [token]);
+    fetchData();
+  }, []);
 
-    const handleSaveToken = () => {
-        localStorage.setItem("jwtToken", token);
-        localStorage.setItem("token", token);
-        fetchData();
-    };
+  return (
+    <div style={{ padding: "20px" }}>
+      <h1>APIForge Dashboard</h1>
 
-    return (
-        <div className="dashboard-shell">
-            <div className="dashboard-panel">
-                <div className="dashboard-header">
-                    <div>
-                        <p className="eyebrow">Backend connected dashboard</p>
-                        <h1>Analytics</h1>
-                        <p className="subtle">API base: {API_BASE_URL}</p>
-                    </div>
-                </div>
+      {/* 🔹 Overview Cards */}
+      {overview && (
+        <div style={{ display: "flex", gap: "20px" }}>
+          <div>
+            <h3>Total</h3>
+            <p>{overview.totalRequests}</p>
+          </div>
 
-                <div className="token-box">
-                    <label htmlFor="jwtToken">JWT token</label>
-                    <div className="token-row">
-                        <input
-                            id="jwtToken"
-                            type="password"
-                            value={token}
-                            onChange={(e) => setToken(e.target.value)}
-                            placeholder="Paste your Bearer token here"
-                        />
-                        <button onClick={handleSaveToken}>Connect</button>
-                    </div>
-                    <p className="subtle">The token is saved in localStorage as <span>jwtToken</span>.</p>
-                </div>
+          <div>
+            <h3>Success</h3>
+            <p>{overview.successRequests}</p>
+          </div>
 
-                <div className="status-row">
-                    <button onClick={fetchData} disabled={loading || !token}>
-                        {loading ? "Loading..." : "Refresh data"}
-                    </button>
-                    {error && <p className="error-text">{error}</p>}
-                </div>
-
-                {overview && (
-                    <div className="metrics-grid">
-                        <div className="metric-card">
-                            <span>Total Requests</span>
-                            <strong>{overview.totalRequests}</strong>
-                        </div>
-                        <div className="metric-card">
-                            <span>Success</span>
-                            <strong>{overview.successRequests}</strong>
-                        </div>
-                        <div className="metric-card">
-                            <span>Failed</span>
-                            <strong>{overview.failedRequests}</strong>
-                        </div>
-                    </div>
-                )}
-
-                {services.length > 0 && (
-                    <div className="services-section">
-                        <h2>Service analytics</h2>
-                        <div className="services-list">
-                            {services.map((service) => (
-                                <article key={service.id} className="service-card">
-                                    <div>
-                                        <h3>{service.name}</h3>
-                                        <p>{service.description}</p>
-                                        <small>{service.endpoint}</small>
-                                    </div>
-                                    <div className="service-stats">
-                                        <span>Total: {service.totalRequests}</span>
-                                        <span>Success: {service.successRequests}</span>
-                                        <span>Failed: {service.failedRequests}</span>
-                                        <span>Access requests: {service.accessRequests}</span>
-                                        <span>Approved: {service.approvedAccesses}</span>
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
+          <div>
+            <h3>Failed</h3>
+            <p>{overview.failedRequests}</p>
+          </div>
         </div>
-    )
-} 
-export default DashBoard;
+      )}
+
+      <br />
+
+      {/* 🔹 Daily Chart */}
+      <h2>Daily Requests</h2>
+      <LineChart width={600} height={300} data={daily}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="date" />
+        <YAxis />
+        <Tooltip />
+        <Line type="monotone" dataKey="totalRequests" />
+      </LineChart>
+
+      <br />
+
+      {/* 🔹 Top Services */}
+      <h2>Top Services</h2>
+      <table border="1" cellPadding="10">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Requests</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {services.map((s, i) => (
+            <tr key={i}>
+              <td>{s.serviceName}</td>
+              <td>{s.totalRequests}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+    </div>
+  );
+};
+
+export default Dashboard;

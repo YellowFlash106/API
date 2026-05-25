@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -15,7 +17,7 @@ const Register = () => {
       });
 
       alert("Registered successfully");
-      window.location.href = "/login";
+      navigate("/login");
 
     } catch (error) {
       console.error(error);
