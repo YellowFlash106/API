@@ -1,13 +1,14 @@
 import { useState } from "react";
+import { readJsonStorage, writeJsonStorage } from "../utils/storage";
 
 export const useLocalStorage = (key, initial) => {
   const [value, setValue] = useState(() => {
-    return JSON.parse(localStorage.getItem(key)) || initial;
+    return readJsonStorage(key, initial);
   });
 
   const update = (val) => {
     setValue(val);
-    localStorage.setItem(key, JSON.stringify(val));
+    writeJsonStorage(key, val);
   };
 
   return [value, update];

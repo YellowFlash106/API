@@ -1,20 +1,81 @@
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background:
-    radial-gradient(circle at top left, rgba(99, 102, 241, 0.18), transparent 32%),
-    radial-gradient(circle at top right, rgba(16, 185, 129, 0.12), transparent 28%),
-    #0b1020;
-  color: #e5eefc;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 * {
   box-sizing: border-box;
 }
 
-button,
-input {
-  font: inherit;
+body {
+  margin: 0;
+  background-color: #0a0a0b;
+  color: #e4e4e7;
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #111114;
+}
+::-webkit-scrollbar-thumb {
+  background: #f97316;
+  border-radius: 2px;
+}
+
+@layer components {
+  .forge-card {
+    @apply bg-forge-card border border-forge-border rounded-xl p-6 transition-all duration-200;
+  }
+  .forge-card:hover {
+    border-color: rgba(249, 115, 22, 0.3);
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.08);
+  }
+  .forge-input {
+    @apply w-full bg-forge-surface border border-forge-border rounded-lg px-4 py-3 text-forge-text font-mono text-sm
+    placeholder-forge-muted focus:outline-none focus:border-forge-ember focus:ring-1 focus:ring-forge-ember
+    transition-all duration-200;
+  }
+  .forge-btn {
+    @apply bg-forge-ember text-white font-display font-semibold px-5 py-2.5 rounded-lg
+    hover:bg-forge-glow transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed
+    text-sm tracking-wide;
+  }
+  .forge-btn-ghost {
+    @apply border border-forge-border text-forge-dim font-display font-medium px-5 py-2.5 rounded-lg
+    hover:border-forge-ember hover:text-forge-ember transition-all duration-200 text-sm;
+  }
+  .status-active {
+    @apply bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full text-xs font-mono;
+  }
+  .status-revoked {
+    @apply bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-0.5 rounded-full text-xs font-mono;
+  }
+  .status-pending {
+    @apply bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-0.5 rounded-full text-xs font-mono;
+  }
+  .nav-link {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-forge-dim font-body text-sm
+    hover:bg-forge-border hover:text-forge-text transition-all duration-150 cursor-pointer;
+  }
+  .nav-link.active {
+    @apply bg-forge-ember/10 text-forge-ember border border-forge-ember/20;
+  }
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(249,115,22,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(249,115,22,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.ember-gradient {
+  background: linear-gradient(135deg, #f97316 0%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }

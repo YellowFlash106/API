@@ -1,55 +1,128 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import api from "../utils/api";
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import api from '../utils/api'
+import { writeJsonStorage } from '../utils/storage'
 
-const Register = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+export default function Register() {
+  const navigate = useNavigate()
+  const [form, setForm] = useState({ name: '', email: '', password: '' })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
     try {
-      await api.post("/auth/register", {
-        email,
-        password
-      });
-
-      alert("Registered successfully");
-      navigate("/login");
-
-    } catch (error) {
-      console.error(error);
-      alert("Registration failed");
+      const res = await api.post('/auth/register', form)
+      localStorage.setItem('token', res.data.token)
+      localStorage.removeItem('demo_mode')
+      const sessionUser = res.data.user ?? {
+        name: form.name || form.email.split('@')[0] || 'Developer',
+        email: form.email,
+        role: 'user',
+      }
+      writeJsonStorage('user', sessionUser)
+      navigate('/')
+    } catch (err) {
+      if (err.code === 'ERR_NETWORK' || err.response?.status >= 500) {
+        const mockUser = { name: form.name, email: form.email, role: 'user' }
+        localStorage.setItem('token', 'mock_token_demo')
+        localStorage.setItem('demo_mode', 'true')
+        writeJsonStorage('user', mockUser)
+        navigate('/')
+      } else {
+        setError(err.response?.data?.message || 'Registration failed. Please try again.')
+      }
+    } finally {
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Register</h2>
+    <div className="min-h-screen bg-forge-bg grid-bg flex items-center justify-center px-4">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-forge-ember/5 rounded-full blur-3xl pointer-events-none" />
 
-      <form onSubmit={handleRegister}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <br /><br />
+      <div className="w-full max-w-md animate-fade-up relative">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-forge-ember flex items-center justify-center shadow-ember-lg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+              </svg>
+            </div>
+            <span className="font-display font-bold text-2xl text-forge-text">APIForge</span>
+          </div>
+          <h2 className="font-display font-semibold text-xl text-forge-text">Create your account</h2>
+          <p className="text-forge-muted text-sm mt-1 font-body">Get started with the API platform</p>
+        </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <br /><br />
+        <div className="forge-card border-forge-border/80">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-red-400 text-sm font-mono">
+                {error}
+              </div>
+            )}
 
-        <button type="submit">Register</button>
-      </form>
+            <div>
+              <label className="block text-xs font-mono text-forge-muted uppercase tracking-widest mb-2">Full Name</label>
+              <input
+                type="text"
+                className="forge-input"
+                placeholder="Jane Developer"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono text-forge-muted uppercase tracking-widest mb-2">Email</label>
+              <input
+                type="email"
+                className="forge-input"
+                placeholder="you@example.com"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono text-forge-muted uppercase tracking-widest mb-2">Password</label>
+              <input
+                type="password"
+                className="forge-input"
+                placeholder="Min 8 characters"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                minLength={8}
+                required
+              />
+            </div>
+
+            <button type="submit" disabled={loading} className="forge-btn w-full text-center mt-2">
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
+                    <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" className="opacity-75" />
+                  </svg>
+                  Creating account...
+                </span>
+              ) : 'Create Account'}
+            </button>
+          </form>
+
+          <p className="text-center text-forge-muted text-sm mt-4 font-body">
+            Already have an account?{' '}
+            <Link to="/login" className="text-forge-ember hover:text-forge-glow transition-colors">
+              Sign in
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
-  );
-};
-
-export default Register;
+  )
+}
