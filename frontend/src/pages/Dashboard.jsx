@@ -8,8 +8,8 @@ import Navbar from '../components/Navbar'
 import Card from '../components/Card'
 import Table from '../components/Table'
 import api from '../utils/api'
-import { mockOverview, mockDaily, mockServices, mockErrors } from '../utils/mockData'
-import { getStoredUser } from '../utils/storage'
+import { useAuth } from "../context/AuthContext";
+
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -28,12 +28,14 @@ const CustomTooltip = ({ active, payload, label }) => {
 }
 
 export default function Dashboard() {
-  const [user] = useState(() => getStoredUser())
+  const { user: authUser } = useAuth()
+  const user = authUser || {}
   const [overview, setOverview] = useState(null)
   const [daily, setDaily] = useState([])
   const [services, setServices] = useState([])
   const [errors, setErrors] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     const load = async () => {
@@ -48,11 +50,8 @@ export default function Dashboard() {
         setDaily(da.data)
         setServices(sv.data)
         setErrors(er.data)
-      } catch {
-        setOverview(mockOverview)
-        setDaily(mockDaily)
-        setServices(mockServices)
-        setErrors(mockErrors)
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to load dashboard data.')
       } finally {
         setLoading(false)
       }
@@ -115,6 +114,20 @@ export default function Dashboard() {
           <div className="text-center">
             <div className="w-10 h-10 border-2 border-forge-ember border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-forge-muted font-mono text-sm">Loading analytics...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen bg-forge-bg">
+        <div className="fixed left-0 top-0 h-screen w-60 bg-forge-surface border-r border-forge-border" />
+        <div className="ml-60 flex-1 flex items-center justify-center px-6 text-center">
+          <div>
+            <p className="text-red-400 font-display text-lg mb-2">Failed to load dashboard</p>
+            <p className="text-forge-muted font-mono text-sm">{error}</p>
           </div>
         </div>
       </div>

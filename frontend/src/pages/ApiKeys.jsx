@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 import Navbar from '../components/Navbar'
 import api from '../utils/api'
-import { mockApiKeys } from '../utils/mockData'
 import { getStoredUser } from '../utils/storage'
 
 function KeyRow({ k, onRevoke, revoking }) {
@@ -85,6 +84,7 @@ export default function ApiKeys() {
   const [showForm, setShowForm] = useState(false)
   const [newKey, setNewKey] = useState(null)
   const [error, setError] = useState('')
+  const [loadError, setLoadError] = useState(null)
 
   useEffect(() => {
     fetchKeys()
@@ -94,8 +94,8 @@ export default function ApiKeys() {
     try {
       const res = await api.get('/apikeys')
       setKeys(res.data)
-    } catch {
-      setKeys(mockApiKeys)
+    } catch (err) {
+      setLoadError(err.response?.data?.message || 'Failed to load API keys.')
     } finally {
       setLoading(false)
     }
@@ -149,6 +149,12 @@ export default function ApiKeys() {
       <main className="ml-60 flex-1 overflow-y-auto">
         <Navbar title="API Keys" subtitle="Manage your authentication credentials" />
         <div className="p-6 space-y-6 animate-fade-up">
+
+          {loadError && (
+            <div className="forge-card border-red-500/30 bg-red-500/5 text-red-300 font-mono text-sm">
+              {loadError}
+            </div>
+          )}
 
           {/* Header stats */}
           <div className="grid grid-cols-3 gap-4">
@@ -229,6 +235,8 @@ export default function ApiKeys() {
 
             {loading ? (
               <div className="text-center py-12 text-forge-muted font-mono text-sm">Loading keys...</div>
+            ) : loadError ? (
+              <div className="text-center py-12 text-red-300 font-mono text-sm">Unable to display keys.</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

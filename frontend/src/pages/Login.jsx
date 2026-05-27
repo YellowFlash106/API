@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../utils/api'
-import { writeJsonStorage } from '../utils/storage'
+import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -15,37 +16,18 @@ export default function Login() {
     setError('')
     try {
       const res = await api.post('/auth/login', form)
-      localStorage.setItem('token', res.data.token)
-      localStorage.removeItem('demo_mode')
       const sessionUser = res.data.user ?? {
         name: form.email.split('@')[0] || 'Developer',
         email: form.email,
         role: 'user',
       }
-      writeJsonStorage('user', sessionUser)
+      login(res.data.token, sessionUser)
       navigate('/')
     } catch (err) {
-      // Demo mode: fake login
-      if (err.code === 'ERR_NETWORK' || err.response?.status >= 500) {
-        const mockUser = { name: 'Demo User', email: form.email, role: 'admin' }
-        localStorage.setItem('token', 'mock_token_demo')
-        localStorage.setItem('demo_mode', 'true')
-        writeJsonStorage('user', mockUser)
-        navigate('/')
-      } else {
-        setError(err.response?.data?.message || 'Invalid credentials. Try demo mode.')
-      }
+      setError(err.response?.data?.message || 'Failed to sign in. Please try again.')
     } finally {
       setLoading(false)
     }
-  }
-
-  const demoLogin = () => {
-    const mockUser = { name: 'Admin Demo', email: 'admin@apiforge.dev', role: 'admin' }
-    localStorage.setItem('token', 'mock_token_demo')
-    localStorage.setItem('demo_mode', 'true')
-    writeJsonStorage('user', mockUser)
-    navigate('/')
   }
 
   return (
@@ -112,12 +94,6 @@ export default function Login() {
               ) : 'Sign In'}
             </button>
           </form>
-
-          <div className="mt-4 pt-4 border-t border-forge-border">
-            <button onClick={demoLogin} className="forge-btn-ghost w-full text-center text-forge-ember border-forge-ember/30 hover:bg-forge-ember/5">
-              ⚡ Enter Demo Mode
-            </button>
-          </div>
 
           <p className="text-center text-forge-muted text-sm mt-4 font-body">
             No account?{' '}

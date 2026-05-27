@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import api from '../utils/api'
-import { writeJsonStorage } from '../utils/storage'
+import { useAuth } from '../context/AuthContext'
 
 export default function Register() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -15,25 +16,15 @@ export default function Register() {
     setError('')
     try {
       const res = await api.post('/auth/register', form)
-      localStorage.setItem('token', res.data.token)
-      localStorage.removeItem('demo_mode')
       const sessionUser = res.data.user ?? {
         name: form.name || form.email.split('@')[0] || 'Developer',
         email: form.email,
         role: 'user',
       }
-      writeJsonStorage('user', sessionUser)
+      login(res.data.token, sessionUser)
       navigate('/')
     } catch (err) {
-      if (err.code === 'ERR_NETWORK' || err.response?.status >= 500) {
-        const mockUser = { name: form.name, email: form.email, role: 'user' }
-        localStorage.setItem('token', 'mock_token_demo')
-        localStorage.setItem('demo_mode', 'true')
-        writeJsonStorage('user', mockUser)
-        navigate('/')
-      } else {
-        setError(err.response?.data?.message || 'Registration failed. Please try again.')
-      }
+      setError(err.response?.data?.message || 'Registration failed. Please try again.')
     } finally {
       setLoading(false)
     }

@@ -5,21 +5,14 @@ import Dashboard from './pages/Dashboard'
 import ApiKeys from './pages/ApiKeys'
 import Services from './pages/Services'
 import Admin from './pages/Admin'
-
-function ProtectedRoute({ children }) {
-  const token = localStorage.getItem('token')
-  return token ? children : <Navigate to="/login" replace />
-}
-
-function PublicRoute({ children }) {
-  const token = localStorage.getItem('token')
-  return token ? <Navigate to="/" replace /> : children
-}
+import ProtectedRoute from './router/ProtectedRoute'
+import PublicRoute from './router/PublicRoute'
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
         <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

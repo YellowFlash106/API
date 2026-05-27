@@ -5,7 +5,6 @@ import Sidebar from '../components/Sidebar'
 import Navbar from '../components/Navbar'
 import Table from '../components/Table'
 import api from '../utils/api'
-import { mockUsers, mockServices, mockErrors } from '../utils/mockData'
 import { getStoredUser } from '../utils/storage'
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -28,6 +27,7 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState('users')
   const [services, setServices] = useState([])
   const [approving, setApproving] = useState(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (user.role !== 'admin') {
@@ -38,9 +38,8 @@ export default function Admin() {
       try {
         const [usersRes] = await Promise.all([api.get('/analytics/users')])
         setUsers(usersRes.data)
-      } catch {
-        setUsers(mockUsers)
-        setServices(mockServices)
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to load admin data.')
       } finally {
         setLoading(false)
       }
@@ -122,6 +121,12 @@ export default function Admin() {
       <main className="ml-60 flex-1 overflow-y-auto">
         <Navbar title="Admin Panel" subtitle="Platform management & monitoring" />
         <div className="p-6 space-y-6 animate-fade-up">
+
+          {error && (
+            <div className="forge-card border-red-500/30 bg-red-500/5 text-red-300 font-mono text-sm">
+              {error}
+            </div>
+          )}
 
           {/* Admin banner */}
           <div className="forge-card border-forge-ember/30 bg-forge-ember/5 flex items-center gap-4">

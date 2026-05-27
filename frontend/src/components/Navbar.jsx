@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar({ title, subtitle }) {
   const [time, setTime] = useState(new Date())
+  const { logout } = useAuth()
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000)
@@ -24,6 +26,13 @@ export default function Navbar({ title, subtitle }) {
         <div className="text-xs font-mono text-forge-muted hidden md:block">
           {time.toLocaleTimeString('en-US', { hour12: false })}
         </div>
+        <button
+          type="button"
+          onClick={logout}
+          className="text-xs font-mono text-forge-muted hover:text-red-300 transition-colors"
+        >
+          Logout
+        </button>
       </div>
     </header>
   )

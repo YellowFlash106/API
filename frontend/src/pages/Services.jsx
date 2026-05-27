@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 import Navbar from '../components/Navbar'
 import api from '../utils/api'
-import { mockServicesList } from '../utils/mockData'
 import { getStoredUser } from '../utils/storage'
 
 const categoryColors = {
@@ -88,6 +87,7 @@ export default function Services() {
   const [user] = useState(() => getStoredUser())
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [requesting, setRequesting] = useState(null)
   const [filter, setFilter] = useState('all')
 
@@ -96,8 +96,8 @@ export default function Services() {
       try {
         const res = await api.get('/services')
         setServices(res.data)
-      } catch {
-        setServices(mockServicesList)
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to load services.')
       } finally {
         setLoading(false)
       }
@@ -131,6 +131,12 @@ export default function Services() {
       <main className="ml-60 flex-1 overflow-y-auto">
         <Navbar title="Services" subtitle="Browse and connect to platform services" />
         <div className="p-6 space-y-6 animate-fade-up">
+
+          {error && (
+            <div className="forge-card border-red-500/30 bg-red-500/5 text-red-300 font-mono text-sm">
+              {error}
+            </div>
+          )}
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4">
@@ -168,6 +174,8 @@ export default function Services() {
           {/* Services grid */}
           {loading ? (
             <div className="text-center py-20 text-forge-muted font-mono text-sm">Loading services...</div>
+          ) : error ? (
+            <div className="text-center py-20 text-red-300 font-mono text-sm">Unable to display services.</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {filtered.map((service) => (

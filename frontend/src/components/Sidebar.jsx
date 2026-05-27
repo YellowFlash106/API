@@ -1,4 +1,5 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 const NavIcon = ({ d }) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -7,13 +8,10 @@ const NavIcon = ({ d }) => (
 )
 
 export default function Sidebar({ user }) {
-  const navigate = useNavigate()
+  const { logout } = useAuth()
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    localStorage.removeItem('demo_mode')
-    navigate('/login')
+    logout()
   }
 
   const navItems = [

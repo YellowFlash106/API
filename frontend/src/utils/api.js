@@ -1,34 +1,38 @@
-import axios from 'axios'
+import axios from "axios";
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000',
-  headers: { 'Content-Type': 'application/json' },
-})
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000"
+});
 
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token')
-    if (token) config.headers.Authorization = `Bearer ${token}`
-    return config
-  },
-  (error) => Promise.reject(error)
-)
+// 🔹 Request Interceptor (attach token)
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
 
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
+// 🔹 Response Interceptor (handle errors globally)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      const isDemoSession = localStorage.getItem('demo_mode') === 'true'
-      if (isDemoSession) {
-        return Promise.reject(error)
-      }
+    const status = error.response?.status;
 
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/login'
+    if (status === 401) {
+      // unauthorized → logout
+      localStorage.removeItem("token");
+      window.location.href = "/login";
     }
-    return Promise.reject(error)
-  }
-)
 
-export default api
+    if (status === 500) {
+      console.error("Server error");
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export default api;
