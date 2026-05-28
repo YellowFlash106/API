@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import Sidebar from '../components/Sidebar'
 import Navbar from '../components/Navbar'
 import api from '../utils/api'
@@ -6,23 +7,33 @@ import { getStoredUser } from '../utils/storage'
 
 function KeyRow({ k, onRevoke, revoking }) {
   const [revealed, setRevealed] = useState(false)
-  const masked = k.key ? `${k.key.slice(0, 10)}${'•'.repeat(12)}` : '—'
+  const [copied, setCopied] = useState(false)
+  const masked = k.key ? `${k.key.slice(0, 10)}${'•'.repeat(12)}` : 'Hidden'
+
+  const handleCopy = async () => {
+    if (!k.key) return
+    await navigator.clipboard.writeText(k.key)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+    setRevealed(false)
+  }
 
   return (
-    <tr className="border-b border-forge-border/50 hover:bg-forge-border/20 transition-colors group">
+    <tr className="border-b border-forge-border/50 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
       <td className="py-4 px-4">
-        <div className="font-medium text-forge-text text-sm">{k.name}</div>
+        <div className="font-medium text-forge-text text-sm">{k.name || `API Key ${k.id}`}</div>
         <div className="text-xs text-forge-muted font-mono mt-0.5">ID: {k.id}</div>
       </td>
       <td className="py-4 px-4">
         <div className="flex items-center gap-2">
           <code className="font-mono text-xs text-forge-dim bg-forge-border px-3 py-1.5 rounded-lg">
-            {revealed ? k.key : masked}
+            {revealed && k.key ? k.key : masked}
           </code>
           <button
-            onClick={() => setRevealed(!revealed)}
-            className="text-forge-muted hover:text-forge-ember transition-colors p-1"
-            title={revealed ? 'Hide key' : 'Reveal key'}
+            onClick={() => k.key && setRevealed(!revealed)}
+            className={`transition-colors p-1 ${k.key ? 'text-forge-muted hover:text-forge-ember' : 'text-forge-muted/50 cursor-not-allowed'}`}
+            title={k.key ? (revealed ? 'Hide key' : 'Reveal key') : 'Key only available at creation'}
+            disabled={!k.key}
           >
             {revealed ? (
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -37,20 +48,30 @@ function KeyRow({ k, onRevoke, revoking }) {
           </button>
           {revealed && (
             <button
-              onClick={() => { navigator.clipboard.writeText(k.key); setRevealed(false) }}
+              onClick={handleCopy}
               className="text-forge-muted hover:text-forge-ember transition-colors p-1"
               title="Copy to clipboard"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-              </svg>
+              {copied ? (
+                <span className="text-xs text-emerald-400 font-mono">Copied</span>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                </svg>
+              )}
             </button>
           )}
         </div>
       </td>
       <td className="py-4 px-4">
-        <span className={k.status === 'active' ? 'status-active' : 'status-revoked'}>
+        <span
+          className={`px-2 py-1 text-xs rounded ${
+            k.status === 'active'
+              ? 'bg-green-100 text-green-600'
+              : 'bg-red-100 text-red-600'
+          }`}
+        >
           {k.status}
         </span>
       </td>
@@ -83,6 +104,7 @@ export default function ApiKeys() {
   const [newKeyName, setNewKeyName] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [newKey, setNewKey] = useState(null)
+  const [newKeyCopied, setNewKeyCopied] = useState(false)
   const [error, setError] = useState('')
   const [loadError, setLoadError] = useState(null)
 
@@ -109,19 +131,8 @@ export default function ApiKeys() {
       const res = await api.post('/apikeys', { name: newKeyName })
       setNewKey(res.data)
       setKeys((prev) => [res.data, ...prev])
-    } catch {
-      // Mock generate
-      const mock = {
-        id: String(Date.now()),
-        name: newKeyName,
-        key: `af_live_${Math.random().toString(36).slice(2, 18)}`,
-        status: 'active',
-        createdAt: new Date().toISOString(),
-        lastUsed: 'Never',
-        requests: 0,
-      }
-      setNewKey(mock)
-      setKeys((prev) => [mock, ...prev])
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to generate API key.')
     } finally {
       setGenerating(false)
       setNewKeyName('')
@@ -133,8 +144,8 @@ export default function ApiKeys() {
     setRevoking(id)
     try {
       await api.put(`/apikeys/${id}/revoke`)
-    } catch {
-      // mock
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to revoke API key.')
     } finally {
       setKeys((prev) => prev.map((k) => (k.id === id ? { ...k, status: 'revoked' } : k)))
       setRevoking(null)
@@ -148,11 +159,22 @@ export default function ApiKeys() {
       <Sidebar user={user} />
       <main className="ml-60 flex-1 overflow-y-auto">
         <Navbar title="API Keys" subtitle="Manage your authentication credentials" />
-        <div className="p-6 space-y-6 animate-fade-up">
+        <motion.div
+          className="p-6 space-y-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+        >
 
           {loadError && (
             <div className="forge-card border-red-500/30 bg-red-500/5 text-red-300 font-mono text-sm">
               {loadError}
+            </div>
+          )}
+
+          {error && !loadError && (
+            <div className="forge-card border-red-500/30 bg-red-500/5 text-red-300 font-mono text-sm">
+              {error}
             </div>
           )}
 
@@ -179,7 +201,7 @@ export default function ApiKeys() {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-emerald-400 text-lg">✓</span>
-                    <span className="font-display font-semibold text-forge-text">Key generated: {newKey.name}</span>
+                    <span className="font-display font-semibold text-forge-text">Key generated: {newKey.name || `API Key ${newKey.id}`}</span>
                   </div>
                   <p className="text-xs text-forge-muted font-mono mb-3">Copy this key now — it won't be shown again in full.</p>
                   <div className="flex items-center gap-2">
@@ -187,10 +209,14 @@ export default function ApiKeys() {
                       {newKey.key}
                     </code>
                     <button
-                      onClick={() => { navigator.clipboard.writeText(newKey.key) }}
+                      onClick={async () => {
+                        await navigator.clipboard.writeText(newKey.key)
+                        setNewKeyCopied(true)
+                        setTimeout(() => setNewKeyCopied(false), 1500)
+                      }}
                       className="forge-btn text-xs"
                     >
-                      Copy
+                      {newKeyCopied ? 'Copied' : 'Copy'}
                     </button>
                   </div>
                 </div>
@@ -243,7 +269,7 @@ export default function ApiKeys() {
                   <thead>
                     <tr className="border-b border-forge-border">
                       {['Name', 'Key', 'Status', 'Created', 'Last Used', 'Requests', 'Actions'].map((h) => (
-                        <th key={h} className="text-left py-3 px-4 text-[11px] font-mono text-forge-muted uppercase tracking-widest">{h}</th>
+                        <th key={h} className="text-left py-3 px-4 text-xs uppercase text-gray-500 font-semibold">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -253,8 +279,8 @@ export default function ApiKeys() {
                     ))}
                     {keys.length === 0 && (
                       <tr>
-                        <td colSpan={7} className="text-center py-12 text-forge-muted font-mono text-xs">
-                          No API keys yet. Generate one to get started.
+                        <td colSpan={7} className="text-center py-12 text-gray-500 text-sm">
+                          No API keys found
                         </td>
                       </tr>
                     )}
@@ -275,7 +301,7 @@ export default function ApiKeys() {
   -H "Content-Type: application/json"`}
             </pre>
           </div>
-        </div>
+        </motion.div>
       </main>
     </div>
   )

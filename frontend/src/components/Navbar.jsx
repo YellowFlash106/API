@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
-export default function Navbar({ title, subtitle }) {
+export default function Navbar({ title = 'Dashboard', subtitle }) {
   const [time, setTime] = useState(new Date())
-  const { logout } = useAuth()
+  const { logout, user } = useAuth()
+  const { dark, setDark } = useTheme()
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000)
@@ -17,12 +19,16 @@ export default function Navbar({ title, subtitle }) {
         {subtitle && <p className="text-xs text-forge-muted font-mono">{subtitle}</p>}
       </div>
       <div className="flex items-center gap-4">
-        {/* Live indicator */}
-        <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
-          <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-          <span className="text-xs text-emerald-400 font-mono">LIVE</span>
+        <button
+          type="button"
+          onClick={() => setDark(!dark)}
+          className="text-xs font-mono text-forge-muted hover:text-forge-text transition-colors"
+        >
+          {dark ? 'Light' : 'Dark'}
+        </button>
+        <div className="text-xs font-mono text-forge-muted hidden md:block">
+          {user?.email || user?.name || 'User'}
         </div>
-        {/* Clock */}
         <div className="text-xs font-mono text-forge-muted hidden md:block">
           {time.toLocaleTimeString('en-US', { hour12: false })}
         </div>

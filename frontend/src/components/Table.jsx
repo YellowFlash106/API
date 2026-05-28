@@ -7,7 +7,7 @@ export default function Table({ columns, data, emptyMessage = 'No data available
             {columns.map((col) => (
               <th
                 key={col.key}
-                className="text-left py-3 px-4 text-[11px] font-mono text-forge-muted uppercase tracking-widest font-medium"
+                className="text-left py-3 px-4 text-xs uppercase tracking-widest text-gray-500 font-semibold"
               >
                 {col.label}
               </th>
@@ -17,7 +17,7 @@ export default function Table({ columns, data, emptyMessage = 'No data available
         <tbody>
           {data.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="text-center py-12 text-forge-muted font-mono text-xs">
+              <td colSpan={columns.length} className="text-center py-12 text-gray-500 text-sm">
                 {emptyMessage}
               </td>
             </tr>
@@ -25,7 +25,7 @@ export default function Table({ columns, data, emptyMessage = 'No data available
             data.map((row, i) => (
               <tr
                 key={i}
-                className="border-b border-forge-border/50 hover:bg-forge-border/30 transition-colors group"
+                className="border-b border-forge-border/50 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 {columns.map((col) => (
                   <td key={col.key} className="py-3 px-4 text-forge-dim font-body">

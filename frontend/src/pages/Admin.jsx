@@ -37,7 +37,16 @@ export default function Admin() {
     const load = async () => {
       try {
         const [usersRes] = await Promise.all([api.get('/analytics/users')])
-        setUsers(usersRes.data)
+        const normalized = (usersRes.data || []).map((row) => ({
+          id: row.apiKeyId ?? row.id,
+          name: row.userName ?? row.name ?? 'Unknown User',
+          email: row.email ?? '—',
+          role: row.role ?? 'user',
+          status: row.status ?? 'active',
+          requests: row.requestCount ?? row.requests ?? 0,
+          joined: row.joined ?? '—',
+        }))
+        setUsers(normalized)
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load admin data.')
       } finally {

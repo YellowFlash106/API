@@ -1,5 +1,5 @@
 const prisma = require("../utils/prisma");
-const bcrypt = require("bcrypt");
+const { hashApiKey } = require("../utils/apiKey");
 
 module.exports = async (req, res, next) =>{
 
@@ -8,6 +8,7 @@ module.exports = async (req, res, next) =>{
     if(!header) return res.status(401).send("API key required");
 
     const apiKey = header.split(" ")[1];
+    const keyHash = hashApiKey(apiKey);
 
     const service = await prisma.service.findFirst({
         where:{
@@ -17,30 +18,30 @@ module.exports = async (req, res, next) =>{
     if(!service){
         return res.status(404).send("Service not found");
     }
-    const keys = await prisma.apiKey.findMany({
-        where : {revoked : false}
+    const key = await prisma.apiKey.findFirst({
+        where: {
+            keyHash,
+            revoked: false,
+        },
     });
 
-    for(let key of keys){
-
-        const access = await prisma.serviceAccess.findFirst({
-            where:{
-                userId: key.userId,
-                serviceId: service.id,
-                approved: true
-            }
-        })
-        if(!access){
-            return res.status(404).send("Access not found");
-        }
-
-        const match = await bcrypt.compare(apiKey, key.key);
-
-        if(match){
-            req.apiKey = key;
-            req.service = service;
-            return next();
-        }
+    if (!key) {
+        return res.status(403).send("Invalid api key");
     }
-    return res.status(403).send("Invalid api key");
+
+    const access = await prisma.serviceAccess.findFirst({
+        where: {
+            userId: key.userId,
+            serviceId: service.id,
+            approved: true,
+        },
+    });
+
+    if (!access) {
+        return res.status(404).send("Access not found");
+    }
+
+    req.apiKey = key;
+    req.service = service;
+    return next();
 }

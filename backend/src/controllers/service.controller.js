@@ -28,7 +28,7 @@ exports.createService = async (req, res) =>{
 }
 
 exports.requestService = async (req, res) =>{
-    const userId = req.body.userId ?? req.body.id;
+    const userId = req.user?.id ?? req.body.userId ?? req.body.id;
     const serviceId = parseInt(req.params.id);
 
     if (!userId) {
@@ -51,7 +51,7 @@ exports.requestService = async (req, res) =>{
 
 exports.approveService = async (req, res) =>{
 
-    const userId = req.body.userId ?? req.body.id;
+    const userId = req.user?.id ?? req.body.userId ?? req.body.id;
     const serviceId = parseInt(req.params.id);
 
     if (!userId) {

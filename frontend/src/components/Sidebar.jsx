@@ -7,8 +7,8 @@ const NavIcon = ({ d }) => (
   </svg>
 )
 
-export default function Sidebar({ user }) {
-  const { logout } = useAuth()
+export default function Sidebar() {
+  const { logout, user } = useAuth()
 
   const handleLogout = () => {
     logout()
@@ -65,7 +65,7 @@ export default function Sidebar({ user }) {
             key={item.to}
             to={item.to}
             end={item.to === '/'}
-            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+            className={({ isActive }) => `nav-link ${isActive ? 'active text-blue-500 font-semibold' : ''}`}
           >
             <NavIcon d={item.icon} />
             {item.label}

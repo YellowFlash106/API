@@ -1,7 +1,8 @@
 const bcrypt = require("bcrypt");
 const prisma = require("../utils/prisma");
 const { generateToken } = require("../utils/jwt");
-
+const AppError = require("../utils/AppError");
+const asyncHandler = require("../utils/asyncHandler");
 const revokedTokens = [];
 
 exports.isTokenRevoked = (token) => revokedTokens.includes(token);
@@ -20,7 +21,11 @@ exports.register = async (req, res) => {
     });
 
     const token = generateToken(user);
-    res.status(201).json({ message: "User registered", token });
+    res.status(201).json({
+      message: "User registered",
+      token,
+      user: { id: user.id, email: user.email, role: user.role },
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
@@ -28,6 +33,7 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
+  
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ message: "Email and password required" });
 
@@ -39,7 +45,10 @@ exports.login = async (req, res) => {
     if (!valid) return res.status(401).send("Invalid password");
 
     const token = generateToken(user);
-    res.json({ token });
+    res.json({
+      token,
+      user: { id: user.id, email: user.email, role: user.role },
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });

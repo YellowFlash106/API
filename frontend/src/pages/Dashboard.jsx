@@ -47,9 +47,21 @@ export default function Dashboard() {
           api.get('/analytics/errors'),
         ])
         setOverview(ov.data)
-        setDaily(da.data)
-        setServices(sv.data)
-        setErrors(er.data)
+        setDaily((da.data || []).map((row) => ({
+          date: row.date,
+          requests: row.totalRequests ?? row.requests ?? 0,
+          errors: row.totalErrors ?? row.errors ?? 0,
+        })))
+        setServices((sv.data || []).map((row) => ({
+          name: row.serviceName ?? row.name ?? 'Unknown Service',
+          requests: row.requestCount ?? row.requests ?? 0,
+          uptime: row.uptime,
+        })))
+        setErrors((er.data || []).map((row) => ({
+          service: row.serviceName ?? row.service ?? 'Unknown Service',
+          errors: row.totalErrors ?? row.errors ?? 0,
+          rate: row.rate ?? '—',
+        })))
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load dashboard data.')
       } finally {
@@ -96,6 +108,9 @@ export default function Dashboard() {
     { key: 'errors', label: 'Errors', render: (v) => <span className="font-mono text-red-400">{typeof v === 'number' ? v.toLocaleString() : v}</span> },
     {
       key: 'rate', label: 'Error Rate', render: (v) => {
+        if (!v || v === '—') {
+          return <span className="font-mono text-sm text-forge-muted">—</span>
+        }
         const n = parseFloat(v)
         return (
           <span className={`font-mono text-sm ${n > 5 ? 'text-red-400' : n > 2 ? 'text-amber-400' : 'text-emerald-400'}`}>

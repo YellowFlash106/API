@@ -34,7 +34,7 @@ model Service {
 
 model ApiKey {
   id        Int      @id @default(autoincrement())
-  key       String
+  keyHash       String
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
