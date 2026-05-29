@@ -54,6 +54,18 @@ model ServiceAccess {
   approved  Boolean  @default(false)
   createdAt DateTime @default(now())
 }
+model ServiceAccess {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  serviceId Int
+  status    String   @default("pending") // pending, approved, rejected
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  service   Service  @relation(fields: [serviceId], references: [id])
+
+  @@unique([userId, serviceId])
+}
 
 model RequestLog {
   id        Int      @id @default(autoincrement())

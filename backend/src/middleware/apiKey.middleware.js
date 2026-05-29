@@ -1,13 +1,14 @@
 const prisma = require("../utils/prisma");
 const { hashApiKey } = require("../utils/apiKey");
 
-module.exports = async (req, res, next) =>{
+const apiKeyMiddleware = async (req, res, next) =>{
 
-    const header = req.headers.authorization;
+    const apiKey = req.headers["x-api-key"];
 
-    if(!header) return res.status(401).send("API key required");
+    if (!apiKey) {
+        return res.status(401).send("API key required");
+    }
 
-    const apiKey = header.split(" ")[1];
     const keyHash = hashApiKey(apiKey);
 
     const service = await prisma.service.findFirst({
@@ -29,11 +30,13 @@ module.exports = async (req, res, next) =>{
         return res.status(403).send("Invalid api key");
     }
 
+    const serviceId = req.serviceId;
+
     const access = await prisma.serviceAccess.findFirst({
         where: {
             userId: key.userId,
-            serviceId: service.id,
-            approved: true,
+            serviceId,
+            status: "approved"
         },
     });
 
@@ -42,6 +45,7 @@ module.exports = async (req, res, next) =>{
     }
 
     req.apiKey = key;
-    req.service = service;
     return next();
 }
+
+module.exports = apiKeyMiddleware;

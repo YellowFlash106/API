@@ -18,6 +18,7 @@ const rateLimitMiddleware = require("./src/middleware/rateLimit.middleware");
 const loggingMiddleware = require("./src/middleware/logging.middleware");
 const { runExampleServices } = require("./src/services/example.service");
 const errorHandler = require("./src/middleware/error.middleware.js");
+const serviceAccessRouter = require("./src/routes/serviceAccess.routes.js");
 
 
 app.use("/auth", authMod);
@@ -27,10 +28,19 @@ app.use("/api", loggingMiddleware);
 app.use("/api", rateLimitMiddleware);
 app.use("/api/services", serviceRoutes);
 app.use("/analytics", analyticsRoutes);
+app.use("/service-access", serviceAccessRouter);
 app.use(errorHandler);
 
 
-app.get("/api/example", apiKeyMiddleware, runExampleServices);
+app.get(
+    "/api/example",
+    (req, res, next) => {
+        req.serviceId = 1;
+        next();
+    },
+    apiKeyMiddleware,
+    runExampleServices
+);
 app.get('/', (req, res) => {
     res.send('API running');
 });
