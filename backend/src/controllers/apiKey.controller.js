@@ -1,37 +1,40 @@
 const prisma = require('../utils/prisma.js');
 const { generateApiKey, hashApiKey } = require("../utils/apiKey");
+const asyncHandler = require("../utils/asyncHandler");
+const AppError = require("../utils/AppError");
 
-exports.createApiKey = async (req, res) =>{
+exports.createApiKey = asyncHandler(async (req, res) => {
     const userId = req.user?.id;
     const name = req.body?.name || null;
 
     if (!userId) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        throw new AppError("Unauthorized", 401);
     }
-        const rawKey = generateApiKey();
-        const keyHash = hashApiKey(rawKey);
 
-        const savedKey = await prisma.apiKey.create({
-            data: {
-                keyHash,
-                userId,
-            },
-        });
+    const rawKey = generateApiKey();
+    const keyHash = hashApiKey(rawKey);
 
-        res.status(201).json({
-                id: savedKey.id,
-                name,
-                key: rawKey,
-                status: savedKey.revoked ? "revoked" : "active",
-                createdAt: savedKey.createdAt,
-        });
-}
+    const savedKey = await prisma.apiKey.create({
+        data: {
+            keyHash,
+            userId
+        }
+    });
 
-exports.listApiKeys = async (req, res) => {
+    res.status(201).json({
+        id: savedKey.id,
+        name,
+        key: rawKey,
+        status: savedKey.revoked ? "revoked" : "active",
+        createdAt: savedKey.createdAt
+    });
+});
+
+exports.listApiKeys = asyncHandler(async (req, res) => {
     const userId = req.user?.id;
 
     if (!userId) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        throw new AppError("Unauthorized", 401);
     }
 
     const apiKeys = await prisma.apiKey.findMany({
@@ -58,14 +61,14 @@ exports.listApiKeys = async (req, res) => {
     }));
 
     res.json(result);
-};
+});
 
-exports.revokeApiKey = async (req, res) => {
+exports.revokeApiKey = asyncHandler(async (req, res) => {
     const userId = req.user?.id;
     const id = parseInt(req.params.id, 10);
 
     if (!userId || Number.isNaN(id)) {
-        return res.status(400).json({ message: 'Invalid request' });
+        throw new AppError("Invalid request", 400);
     }
 
     const key = await prisma.apiKey.findFirst({
@@ -73,7 +76,7 @@ exports.revokeApiKey = async (req, res) => {
     });
 
     if (!key) {
-        return res.status(404).json({ message: 'API key not found' });
+        throw new AppError("API key not found", 404);
     }
 
     const updated = await prisma.apiKey.update({
@@ -85,5 +88,5 @@ exports.revokeApiKey = async (req, res) => {
         id: updated.id,
         status: updated.revoked ? 'revoked' : 'active',
     });
-};
+});
 

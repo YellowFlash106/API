@@ -8,13 +8,15 @@ let Services = [
 ];
 
 const prisma = require('../utils/prisma.js');
+const asyncHandler = require('../utils/asyncHandler');
+const AppError = require('../utils/AppError');
 
-exports.getAllServices = async (req, res) =>{
+exports.getAllServices = asyncHandler(async (req, res) => {
     const services = await prisma.service.findMany(); 
     res.json(services);
-}
+});
 
-exports.createService = async (req, res) =>{
+exports.createService = asyncHandler(async (req, res) => {
     const { name, description, endpoint } = req.body;
 
     const newService = await prisma.service.create({
@@ -24,20 +26,24 @@ exports.createService = async (req, res) =>{
             endpoint
         }
     });
-    res.json(newService);
-}
+    res.status(201).json(newService);
+});
 
-exports.requestService = async (req, res) =>{
+exports.requestService = asyncHandler(async (req, res) => {
     const userId = req.user?.id ?? req.body.userId ?? req.body.id;
-    const serviceId = parseInt(req.params.id);
+    const serviceId = parseInt(req.params.id, 10);
+
+    if (Number.isNaN(serviceId)) {
+        throw new AppError("Invalid service id", 400);
+    }
 
     if (!userId) {
-        return res.status(400).json({ message: "userId is required in body" });
+        throw new AppError("userId is required in body", 400);
     }
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        throw new AppError("User not found", 404);
     }
 
     const request = await prisma.serviceAccess.create({
@@ -47,20 +53,24 @@ exports.requestService = async (req, res) =>{
         }
     });
     res.json(request);
-}
+});
 
-exports.approveService = async (req, res) =>{
+exports.approveService = asyncHandler(async (req, res) => {
 
     const userId = req.user?.id ?? req.body.userId ?? req.body.id;
-    const serviceId = parseInt(req.params.id);
+    const serviceId = parseInt(req.params.id, 10);
+
+    if (Number.isNaN(serviceId)) {
+        throw new AppError("Invalid service id", 400);
+    }
 
     if (!userId) {
-        return res.status(400).json({ message: "userId is required in body" });
+        throw new AppError("userId is required in body", 400);
     }
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        throw new AppError("User not found", 404);
     }
 
     // if (req.user.role !== "admin") {
@@ -76,5 +86,5 @@ exports.approveService = async (req, res) =>{
         }
     });
     res.json(access);
-}
+});
 

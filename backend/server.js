@@ -7,6 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
 const prisma = require("./src/utils/prisma.js");
 const serviceRoutes = require("./src/routes/service.routes.js");
 const apiKeyRoutes = require("./src/routes/apiKey.routes.js");
@@ -14,7 +15,7 @@ const authMod = require("./src/routes/auth.routes");
 const serviceMod = require("./src/routes/service.routes");
 const analyticsRoutes = require("./src/routes/analytics.routes");
 const apiKeyMiddleware = require("./src/middleware/apiKey.middleware");
-const rateLimitMiddleware = require("./src/middleware/rateLimit.middleware");
+const rateLimiter = require("./src/middleware/rateLimiter");
 const loggingMiddleware = require("./src/middleware/logging.middleware");
 const { runExampleServices } = require("./src/services/example.service");
 const errorHandler = require("./src/middleware/error.middleware.js");
@@ -24,8 +25,6 @@ const serviceAccessRouter = require("./src/routes/serviceAccess.routes.js");
 app.use("/auth", authMod);
 app.use("/services", serviceMod);
 app.use("/apikeys", apiKeyRoutes);
-app.use("/api", loggingMiddleware);
-app.use("/api", rateLimitMiddleware);
 app.use("/api/services", serviceRoutes);
 app.use("/analytics", analyticsRoutes);
 app.use("/service-access", serviceAccessRouter);
@@ -39,6 +38,8 @@ app.get(
         next();
     },
     apiKeyMiddleware,
+    rateLimiter,
+    loggingMiddleware,
     runExampleServices
 );
 app.get('/', (req, res) => {

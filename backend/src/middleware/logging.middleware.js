@@ -1,24 +1,28 @@
-const prisma = require('../utils/prisma');
+const prisma = require("../utils/prisma");
 
-module.exports = async (req, res, next) =>{
-    const originalSend = res.send;
+const loggerMiddleware = async (req, res, next) => {
+  const start = Date.now();
 
-    res.send = async function (body) {
-        try {
-            if(req.apiKey && req.service) {
-                await prisma.requestLog.create({
-                    data:{
-                        apiKeyId: req.apiKey.id,
-                        serviceId: req.service.id,
-                        status : res.statusCode,
-                    }
-                });
-            }
-        } catch (error) {
-            console.log('Logging Error', error);
-            
+  res.on("finish", async () => {
+    try {
+      if (!req.apiKey || !req.serviceId) return;
+
+      const responseTime = Date.now() - start;
+
+      await prisma.apiLog.create({
+        data: {
+          apiKeyId: req.apiKey.id,
+          serviceId: req.serviceId,
+          statusCode: res.statusCode,
+          responseTime
         }
-        return originalSend.call(this, body);
+      });
+    } catch (err) {
+      console.error("Logging failed:", err.message);
     }
-    next();
-}
+  });
+
+  next();
+};
+
+module.exports = loggerMiddleware;
