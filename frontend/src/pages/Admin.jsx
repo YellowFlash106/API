@@ -36,7 +36,10 @@ export default function Admin() {
     }
     const load = async () => {
       try {
-        const [usersRes] = await Promise.all([api.get('/analytics/users')])
+        const [usersRes, servicesRes] = await Promise.all([
+          api.get('/analytics/users'),
+          api.get('/service-access')
+        ])
         const normalized = (usersRes.data || []).map((row) => ({
           id: row.apiKeyId ?? row.id,
           name: row.userName ?? row.name ?? 'Unknown User',
@@ -47,6 +50,7 @@ export default function Admin() {
           joined: row.joined ?? '—',
         }))
         setUsers(normalized)
+        setServices(servicesRes.data || [])
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load admin data.')
       } finally {
@@ -58,9 +62,23 @@ export default function Admin() {
 
   const approveService = async (id) => {
     setApproving(id)
-    await new Promise((r) => setTimeout(r, 800))
-    setServices((prev) => prev.map((s) => (s.id === id ? { ...s, status: 'approved' } : s)))
-    setApproving(null)
+    try {
+      await api.put(`/service-access/${id}/approve`)
+      setServices((prev) => prev.map((s) => (s.id === id ? { ...s, approved: true } : s)))
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to approve request.')
+    } finally {
+      setApproving(null)
+    }
+  }
+
+  const rejectService = async (id) => {
+    try {
+      await api.put(`/service-access/${id}/reject`)
+      setServices((prev) => prev.filter((s) => s.id !== id))
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to reject request.')
+    }
   }
 
   const userColumns = [
@@ -120,7 +138,7 @@ export default function Admin() {
 
   const tabs = [
     { id: 'users', label: 'Users', count: users.length },
-    { id: 'services', label: 'Service Requests', count: services.filter((s) => s.status === 'pending').length },
+    { id: 'services', label: 'Service Requests', count: services.filter((s) => !s.approved).length },
     { id: 'usage', label: 'Usage Monitor' },
   ]
 
@@ -152,7 +170,7 @@ export default function Admin() {
                 <div className="text-xs font-mono text-forge-muted">Users</div>
               </div>
               <div>
-                <div className="text-xl font-display font-bold text-amber-400">{services.filter((s) => s.status === 'pending').length}</div>
+                <div className="text-xl font-display font-bold text-amber-400">{services.filter((s) => !s.approved).length}</div>
                 <div className="text-xs font-mono text-forge-muted">Pending</div>
               </div>
               <div>
@@ -204,18 +222,20 @@ export default function Admin() {
           {activeTab === 'services' && (
             <div className="space-y-3">
               <h3 className="font-display font-semibold text-forge-text">Service Access Requests</h3>
-              {services.filter((s) => s.status === 'pending').length === 0 ? (
+              {services.filter((s) => !s.approved).length === 0 ? (
                 <div className="forge-card text-center py-12 text-forge-muted font-mono text-sm">
                   No pending service requests.
                 </div>
               ) : (
-                services.filter((s) => s.status === 'pending').map((s) => (
+                services.filter((s) => !s.approved).map((s) => (
                   <div key={s.id} className="forge-card flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-xl bg-forge-border flex items-center justify-center text-lg">🔧</div>
                       <div>
-                        <div className="font-display font-medium text-forge-text">{s.name}</div>
-                        <div className="text-xs text-forge-muted font-mono">{s.description?.slice(0, 60)}...</div>
+                        <div className="font-display font-medium text-forge-text">{s.service?.name || 'Unknown Service'}</div>
+                        <div className="text-xs text-forge-muted font-mono">
+                          Requested by {s.user?.email || 'Unknown User'} on {new Date(s.createdAt).toLocaleDateString()}
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -227,7 +247,12 @@ export default function Admin() {
                       >
                         {approving === s.id ? 'Approving...' : 'Approve'}
                       </button>
-                      <button className="forge-btn-ghost text-xs py-1.5">Deny</button>
+                      <button
+                        onClick={() => rejectService(s.id)}
+                        className="forge-btn-ghost text-xs py-1.5"
+                      >
+                        Deny
+                      </button>
                     </div>
                   </div>
                 ))

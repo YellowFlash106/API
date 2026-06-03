@@ -9,6 +9,7 @@ import Card from '../components/Card'
 import Table from '../components/Table'
 import api from '../utils/api'
 import { useAuth } from "../context/AuthContext";
+import toast from 'react-hot-toast'
 
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -30,7 +31,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 export default function Dashboard() {
   const { user: authUser } = useAuth()
   const user = authUser || {}
-  const [overview, setOverview] = useState(null)
+  const [overview, setOverview] = useState({})
   const [daily, setDaily] = useState([])
   const [services, setServices] = useState([])
   const [errors, setErrors] = useState([])
@@ -46,23 +47,29 @@ export default function Dashboard() {
           api.get('/analytics/services'),
           api.get('/analytics/errors'),
         ])
-        setOverview(ov.data)
+        setOverview(ov.data || {})
         setDaily((da.data || []).map((row) => ({
           date: row.date,
-          requests: row.totalRequests ?? row.requests ?? 0,
+          requests: row.totalRequests ?? row.requests ?? row.count ?? 0,
           errors: row.totalErrors ?? row.errors ?? 0,
+          count: row.totalRequests ?? row.requests ?? row.count ?? 0,
         })))
         setServices((sv.data || []).map((row) => ({
+          serviceId: row.serviceId,
           name: row.serviceName ?? row.name ?? 'Unknown Service',
-          requests: row.requestCount ?? row.requests ?? 0,
+          requests: row.requestCount ?? row.requests ?? row.count ?? 0,
+          count: row.requestCount ?? row.requests ?? row.count ?? 0,
           uptime: row.uptime,
         })))
         setErrors((er.data || []).map((row) => ({
           service: row.serviceName ?? row.service ?? 'Unknown Service',
           errors: row.totalErrors ?? row.errors ?? 0,
           rate: row.rate ?? '—',
+          count: row.totalErrors ?? row.errors ?? row.count ?? 0,
+          status: row.serviceName ?? row.service ?? 'Unknown Service',
         })))
       } catch (err) {
+        toast.error("Failed to load analytics")
         setError(err.response?.data?.message || 'Failed to load dashboard data.')
       } finally {
         setLoading(false)

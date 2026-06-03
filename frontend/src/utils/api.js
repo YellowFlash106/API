@@ -17,21 +17,13 @@ api.interceptors.request.use((config) => {
 
 // 🔹 Response Interceptor (handle errors globally)
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    const status = error.response?.status;
-
-    if (status === 401) {
-      // unauthorized → logout
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
       localStorage.removeItem("token");
       window.location.href = "/login";
     }
-
-    if (status === 500) {
-      console.error("Server error");
-    }
-
-    return Promise.reject(error);
+    return Promise.reject(err);
   }
 );
 

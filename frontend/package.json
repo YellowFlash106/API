@@ -10,14 +10,14 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
-    "axios": "^1.6.2",
+    "axios": "^1.16.1",
     "framer-motion": "^12.40.0",
-    "lucide-react": "^1.16.0",
+    "lucide-react": "^1.17.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.6.0",
-    "react-router-dom": "^6.20.1",
-    "recharts": "^2.10.1",
+    "react-router-dom": "^6.30.4",
+    "recharts": "^2.15.4",
     "zod": "^4.4.3"
   },
   "devDependencies": {

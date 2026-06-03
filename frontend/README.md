@@ -14,3 +14,26 @@ The React Compiler is currently not compatible with SWC. See [this issue](https:
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+
+
+
+
+
+
+
+🔹 First Build (Foundation)
+1. AuthContext
+2. API (axios setup)
+3. Protected routes
+🔹 Second Build (UI Shell)
+4. Sidebar
+5. Navbar
+6. Layout
+🔹 Third Build (Core Pages)
+7. Login / Register
+8. Dashboard
+🔹 Fourth Build (Features)
+9. API Keys page
+10. Services page
+11. Admin panel

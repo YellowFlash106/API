@@ -84,8 +84,8 @@ exports.getUserAnalytics = asyncHandler(async (req, res) => {
 
 
 exports.getErrorAnalytics = asyncHandler(async (req, res) => {
-    const userData = await prisma.requestLog.groupBy({
-        by: ["apiKeyId"],
+    const serviceData = await prisma.requestLog.groupBy({
+        by: ["serviceId"],
         where: {
             status: {
                 gte: 400
@@ -100,15 +100,13 @@ exports.getErrorAnalytics = asyncHandler(async (req, res) => {
             }
         }
     });
-    const apiKeys = await prisma.apiKey.findMany({
-        include: { user: true }
-    });
+    const services = await prisma.service.findMany();
 
-    const result = userData.map((item) => {
-        const key = apiKeys.find(k => k.id === item.apiKeyId);
+    const result = serviceData.map((item) => {
+        const service = services.find(s => s.id === item.serviceId);
         return {
-            apiKeyId: item.apiKeyId,
-            userName: key && key.user ? key.user.name : "Unknown User",
+            serviceId: item.serviceId,
+            serviceName: service ? service.name : "Unknown Service",
             totalErrors: item._count.id
         };
     });
