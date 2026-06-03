@@ -10,6 +10,7 @@ import Table from '../components/Table'
 import api from '../utils/api'
 import { useAuth } from "../context/AuthContext";
 import toast from 'react-hot-toast'
+import { Activity } from "lucide-react";
 
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -266,7 +267,13 @@ export default function Dashboard() {
               </div>
               <span className="text-xs font-mono text-forge-muted border border-forge-border px-3 py-1 rounded-full">{services.length} services</span>
             </div>
-            <Table columns={serviceColumns} data={services} emptyMessage="No service data" />
+            {services.length === 0 ? (
+              <div className="text-center text-gray-500 mt-10">
+                No services available
+              </div>
+            ) : (
+              <Table columns={serviceColumns} data={services} emptyMessage="No service data" />
+            )}
           </div>
 
           {/* Error Analytics Table */}

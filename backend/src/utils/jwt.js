@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 exports.generateToken = (user) => {
     return jwt.sign(
         { id: user.id, role: user.role },
-        process.env.JWT_SECRET || "dev-secret",
+        process.env.JWT_SECRET || "supersecretkey",
         { expiresIn: "1d" }
     );
 };

@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar'
 import Table from '../components/Table'
 import api from '../utils/api'
 import { getStoredUser } from '../utils/storage'
+import toast from 'react-hot-toast'
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload?.length) {
@@ -65,7 +66,9 @@ export default function Admin() {
     try {
       await api.put(`/service-access/${id}/approve`)
       setServices((prev) => prev.map((s) => (s.id === id ? { ...s, approved: true } : s)))
+      toast.success("Approved")
     } catch (err) {
+      toast.error("Approval failed")
       setError(err.response?.data?.message || 'Failed to approve request.')
     } finally {
       setApproving(null)
@@ -76,10 +79,70 @@ export default function Admin() {
     try {
       await api.put(`/service-access/${id}/reject`)
       setServices((prev) => prev.filter((s) => s.id !== id))
+      toast.success("Rejected")
     } catch (err) {
+      toast.error("Reject failed")
       setError(err.response?.data?.message || 'Failed to reject request.')
     }
   }
+
+  const requestColumns = [
+    {
+      key: 'user',
+      label: 'User',
+      render: (_v, row) => (
+        <span className="text-forge-text font-medium text-sm">
+          {row.user?.email || 'N/A'}
+        </span>
+      )
+    },
+    {
+      key: 'service',
+      label: 'Service',
+      render: (_v, row) => (
+        <span className="text-forge-text font-medium text-sm">
+          {row.service?.name || 'N/A'}
+        </span>
+      )
+    },
+    {
+      key: 'approved',
+      label: 'Status',
+      render: (v) => {
+        return v ? (
+          <span className="status-active text-xs font-mono px-2 py-0.5 rounded-full border text-emerald-400 bg-emerald-500/10 border-emerald-500/20">Approved</span>
+        ) : (
+          <span className="status-pending text-xs font-mono px-2 py-0.5 rounded-full border text-amber-400 bg-amber-500/10 border-amber-500/20">Pending</span>
+        )
+      }
+    },
+    {
+      key: 'id',
+      label: 'Action',
+      render: (id, row) => {
+        if (!row.approved) {
+          return (
+            <div className="flex gap-2">
+              <button
+                onClick={() => approveService(id)}
+                disabled={approving === id}
+                className="text-xs text-emerald-400 hover:text-emerald-300 border border-emerald-500/20 hover:border-emerald-500/40 px-2.5 py-1 rounded-lg font-mono transition-all disabled:opacity-40"
+              >
+                {approving === id ? 'Approving...' : 'Approve'}
+              </button>
+              <button
+                onClick={() => rejectService(id)}
+                className="text-xs text-red-400 hover:text-red-300 border border-red-500/20 hover:border-red-500/40 px-2.5 py-1 rounded-lg font-mono transition-all"
+              >
+                Reject
+              </button>
+            </div>
+          )
+        }
+        return <span className="text-xs text-forge-muted font-mono">No actions</span>
+      }
+    }
+  ]
 
   const userColumns = [
     {
@@ -220,42 +283,17 @@ export default function Admin() {
           )}
 
           {activeTab === 'services' && (
-            <div className="space-y-3">
-              <h3 className="font-display font-semibold text-forge-text">Service Access Requests</h3>
-              {services.filter((s) => !s.approved).length === 0 ? (
-                <div className="forge-card text-center py-12 text-forge-muted font-mono text-sm">
-                  No pending service requests.
+            <div className="forge-card">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h3 className="font-display font-semibold text-forge-text">Service Access Requests</h3>
+                  <p className="text-xs text-forge-muted font-mono mt-0.5">Manage developer access requests for services</p>
                 </div>
+              </div>
+              {loading ? (
+                <div className="text-center py-12 text-forge-muted font-mono text-sm">Loading requests...</div>
               ) : (
-                services.filter((s) => !s.approved).map((s) => (
-                  <div key={s.id} className="forge-card flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-forge-border flex items-center justify-center text-lg">🔧</div>
-                      <div>
-                        <div className="font-display font-medium text-forge-text">{s.service?.name || 'Unknown Service'}</div>
-                        <div className="text-xs text-forge-muted font-mono">
-                          Requested by {s.user?.email || 'Unknown User'} on {new Date(s.createdAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="status-pending">Pending</span>
-                      <button
-                        onClick={() => approveService(s.id)}
-                        disabled={approving === s.id}
-                        className="forge-btn text-xs py-1.5 disabled:opacity-40"
-                      >
-                        {approving === s.id ? 'Approving...' : 'Approve'}
-                      </button>
-                      <button
-                        onClick={() => rejectService(s.id)}
-                        className="forge-btn-ghost text-xs py-1.5"
-                      >
-                        Deny
-                      </button>
-                    </div>
-                  </div>
-                ))
+                <Table columns={requestColumns} data={services} emptyMessage="No requests found" />
               )}
             </div>
           )}

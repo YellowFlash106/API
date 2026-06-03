@@ -1,9 +1,17 @@
-export default function Card({ title, value, sub, trend, icon, accent = false }) {
+import { motion } from 'framer-motion'
+
+export default function Card({ children, title, value, sub, trend, icon, accent = false }) {
   const isUp = trend > 0
   const trendStr = trend !== undefined ? `${isUp ? '+' : ''}${trend}%` : null
 
   return (
-    <div className={`forge-card relative overflow-hidden ${accent ? 'border-forge-ember/40 shadow-ember' : ''}`}>
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      whileHover={{ y: -4, scale: 1.01 }}
+      className={`forge-card relative overflow-hidden ${accent ? 'border-forge-ember/40 shadow-ember' : ''}`}
+    >
       {accent && (
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-forge-ember to-forge-amber" />
       )}
@@ -22,6 +30,7 @@ export default function Card({ title, value, sub, trend, icon, accent = false })
         <div className="text-sm text-forge-dim font-body">{title}</div>
         {sub && <div className="text-xs text-forge-muted font-mono">{sub}</div>}
       </div>
-    </div>
+      {children}
+    </motion.div>
   )
 }

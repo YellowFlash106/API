@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { motion } from 'framer-motion'
 
 const NavIcon = ({ d }) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -67,8 +68,10 @@ export default function Sidebar() {
             end={item.to === '/'}
             className={({ isActive }) => `nav-link ${isActive ? 'active text-blue-500 font-semibold' : ''}`}
           >
-            <NavIcon d={item.icon} />
-            {item.label}
+            <motion.div whileHover={{ x: 5 }} className="flex items-center gap-3 w-full">
+              <NavIcon d={item.icon} />
+              <span>{item.label}</span>
+            </motion.div>
           </NavLink>
         ))}
       </nav>

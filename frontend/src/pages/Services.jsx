@@ -151,6 +151,10 @@ export default function Services() {
             <div className="text-center py-20 text-forge-muted font-mono text-sm">Loading services...</div>
           ) : error ? (
             <div className="text-center py-20 text-red-300 font-mono text-sm">Unable to display services.</div>
+          ) : services.length === 0 ? (
+            <div className="text-center text-gray-500 mt-10">
+              No services available
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {services.map((service) => (
@@ -162,11 +166,6 @@ export default function Services() {
                   status={getStatus(service.id)}
                 />
               ))}
-              {services.length === 0 && (
-                <div className="col-span-3 text-center py-20 text-forge-muted font-mono text-sm">
-                  No services available.
-                </div>
-              )}
             </div>
           )}
         </div>
