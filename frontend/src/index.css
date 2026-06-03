@@ -1,8 +1,71 @@
-@config "../tailwind.config.js";
+@custom-variant dark (&:where(.dark, .dark *));
+@variant dark (&:where(.dark, .dark *));
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@theme {
+  --color-forge-bg: var(--bg-color);
+  --color-forge-surface: var(--surface-color);
+  --color-forge-card: var(--card-color);
+  --color-forge-border: var(--border-color);
+  --color-forge-muted: var(--muted-color);
+  --color-forge-text: var(--text-color);
+  --color-forge-dim: var(--dim-color);
+
+  --color-forge-ember: #f97316;
+  --color-forge-amber: #f59e0b;
+  --color-forge-glow: #fb923c;
+
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --font-display: "Syne", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+
+  --shadow-ember: 0 0 20px rgba(249,115,22,0.15);
+  --shadow-ember-lg: 0 0 40px rgba(249,115,22,0.2);
+  --shadow-glow: 0 0 60px rgba(249,115,22,0.1);
+
+  --animate-pulse-ember: pulse-ember 2s ease-in-out infinite;
+  --animate-slide-in: slideIn 0.3s ease-out;
+  --animate-fade-up: fadeUp 0.4s ease-out;
+
+  @keyframes pulse-ember {
+    0%, 100% { box-shadow: 0 0 10px rgba(249,115,22,0.1); }
+    50% { box-shadow: 0 0 25px rgba(249,115,22,0.3); }
+  }
+  @keyframes slideIn {
+    from { transform: translateX(-10px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes fadeUp {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+}
+
+:root {
+  /* Default Light Theme */
+  --bg-color: #f8fafc;
+  --surface-color: #ffffff;
+  --card-color: #ffffff;
+  --border-color: #e2e8f0;
+  --text-color: #0f172a;
+  --muted-color: #64748b;
+  --dim-color: #475569;
+}
+
+:root.dark,
+.dark {
+  /* Dark Theme */
+  --bg-color: #0a0a0b;
+  --surface-color: #111114;
+  --card-color: #16161a;
+  --border-color: #1e1e24;
+  --text-color: #e4e4e7;
+  --muted-color: #52525b;
+  --dim-color: #a1a1aa;
+}
 
 * {
   box-sizing: border-box;
@@ -10,10 +73,11 @@
 
 body {
   margin: 0;
-  background-color: #0a0a0b;
-  color: #e4e4e7;
+  background-color: var(--bg-color);
+  color: var(--text-color);
   font-family: 'DM Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 ::-webkit-scrollbar {
@@ -21,7 +85,7 @@ body {
   height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #111114;
+  background: var(--surface-color);
 }
 ::-webkit-scrollbar-thumb {
   background: #f97316;

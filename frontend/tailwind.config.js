@@ -5,16 +5,16 @@ export default {
     extend: {
       colors: {
         forge: {
-          bg: '#0a0a0b',
-          surface: '#111114',
-          card: '#16161a',
-          border: '#1e1e24',
+          bg: 'var(--bg-color)',
+          surface: 'var(--surface-color)',
+          card: 'var(--card-color)',
+          border: 'var(--border-color)',
           ember: '#f97316',
           amber: '#f59e0b',
           glow: '#fb923c',
-          muted: '#52525b',
-          text: '#e4e4e7',
-          dim: '#a1a1aa',
+          muted: 'var(--muted-color)',
+          text: 'var(--text-color)',
+          dim: 'var(--dim-color)',
         },
       },
       fontFamily: {
