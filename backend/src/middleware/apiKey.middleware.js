@@ -36,7 +36,7 @@ const apiKeyMiddleware = async (req, res, next) =>{
         where: {
             userId: key.userId,
             serviceId,
-            status: "approved"
+            approved: true
         },
     });
 

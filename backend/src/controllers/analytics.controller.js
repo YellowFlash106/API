@@ -54,31 +54,36 @@ exports.getServiceAnalytics = asyncHandler(async (req, res) => {
 });
 
 exports.getUserAnalytics = asyncHandler(async (req, res) => {
-    const userData = await prisma.requestLog.groupBy({
-        by: ["apiKeyId"],
-        _count: {
-            id: true
-        },
-        orderBy: {
-            _count: {
-                id: "desc"
+    // Get all users, including their API keys and the request logs count for those keys
+    const users = await prisma.user.findMany({
+        include: {
+            apiKeys: {
+                select: {
+                    requestLogs: {
+                        select: {
+                            id: true
+                        }
+                    }
+                }
             }
         }
     });
-    const apiKeys = await prisma.apiKey.findMany({
-        include: {
-            user: true
-        }
-    });
 
-    const result = userData.map((item) => {
-        const key = apiKeys.find(k => k.id === item.apiKeyId);
+    const result = users.map((u) => {
+        // Calculate the sum of all requests across all API keys for this user
+        const totalRequests = u.apiKeys.reduce((sum, key) => sum + (key.requestLogs?.length || 0), 0);
+
         return {
-            apiKeyId: item.apiKeyId,
-            userName: key && key.user ? key.user.name : "Unknown User",
-            requestCount: item._count.id
+            id: u.id,
+            userName: u.email.split('@')[0] || 'Unknown User',
+            email: u.email,
+            role: u.role,
+            status: 'active',
+            requests: totalRequests,
+            joined: new Date(u.createdAt).toLocaleDateString()
         };
     });
+
     res.json(result);
 });
 

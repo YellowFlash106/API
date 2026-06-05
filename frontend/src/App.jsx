@@ -8,11 +8,12 @@ import Admin from './pages/Admin'
 import ProtectedRoute from './router/ProtectedRoute'
 import PublicRoute from './router/PublicRoute'
 import { AnimatePresence } from "framer-motion";
-import { useLocation } from "react-router-dom";
+import { Toaster } from 'react-hot-toast'
 
 export default function App() {
   return (
     <BrowserRouter>
+      <Toaster position="top-right" />
       <AnimatePresence mode="wait">
         <Routes>
 
