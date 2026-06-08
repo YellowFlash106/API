@@ -1,7 +1,7 @@
 const prisma = require("../utils/prisma");
 const { hashApiKey } = require("../utils/apiKey");
 
-const apiKeyMiddleware = async (req, res, next) =>{
+const apiKeyMiddleware = async (req, res, next) => {
 
     const apiKey = req.headers["x-api-key"];
 
@@ -12,11 +12,11 @@ const apiKeyMiddleware = async (req, res, next) =>{
     const keyHash = hashApiKey(apiKey);
 
     const service = await prisma.service.findFirst({
-        where:{
-            endpoint : req.baseUrl + req.path
+        where: {
+            endpoint: req.baseUrl + req.path
         }
     })
-    if(!service){
+    if (!service) {
         return res.status(404).send("Service not found");
     }
     const key = await prisma.apiKey.findFirst({
@@ -30,6 +30,7 @@ const apiKeyMiddleware = async (req, res, next) =>{
         return res.status(403).send("Invalid api key");
     }
 
+    // const serviceId = req.serviceId;
     const serviceId = service.id;
     req.serviceId = serviceId;
 
