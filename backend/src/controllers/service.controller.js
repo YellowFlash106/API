@@ -56,6 +56,9 @@ exports.requestService = asyncHandler(async (req, res) => {
 });
 
 exports.approveService = asyncHandler(async (req, res) => {
+    if (req.user?.role !== "admin") {
+        throw new AppError("Forbidden: Only administrators can approve service requests", 403);
+    }
 
     const userId = req.user?.id ?? req.body.userId ?? req.body.id;
     const serviceId = parseInt(req.params.id, 10);
@@ -73,9 +76,6 @@ exports.approveService = asyncHandler(async (req, res) => {
         throw new AppError("User not found", 404);
     }
 
-    // if (req.user.role !== "admin") {
-    //   return res.status(403).send("Only admin allowed");
-    // }
     const access = await prisma.serviceAccess.updateMany({
         where: {
             userId,

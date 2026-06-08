@@ -86,6 +86,10 @@ exports.getUserAccesses = asyncHandler(async (req, res) => {
 });
 
 exports.approveAccess = asyncHandler(async (req, res) => {
+    if (req.user?.role !== "admin") {
+        throw new AppError("Forbidden: Only administrators can approve/reject access requests", 403);
+    }
+
     const id = parseInt(req.params.id, 10);
 
     if (Number.isNaN(id)) {
@@ -100,6 +104,10 @@ exports.approveAccess = asyncHandler(async (req, res) => {
 });
 
 exports.rejectAccess = asyncHandler(async (req, res) => {
+    if (req.user?.role !== "admin") {
+        throw new AppError("Forbidden: Only administrators can approve/reject access requests", 403);
+    }
+
     const id = parseInt(req.params.id, 10);
 
     if (Number.isNaN(id)) {

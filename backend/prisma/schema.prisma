@@ -53,6 +53,8 @@ model ServiceAccess {
 
   approved  Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@unique([userId, serviceId])
 }
 model RequestLog {
   id        Int      @id @default(autoincrement())
