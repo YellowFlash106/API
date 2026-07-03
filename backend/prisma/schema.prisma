@@ -56,6 +56,7 @@ model ServiceAccess {
 
   @@unique([userId, serviceId])
 }
+
 model RequestLog {
   id        Int      @id @default(autoincrement())
   apiKeyId  Int
@@ -66,6 +67,7 @@ model RequestLog {
   apiKey    ApiKey   @relation(fields: [apiKeyId], references: [id])
   service   Service  @relation(fields: [serviceId], references: [id])
 }
+
 model ApiLog {
   id           Int      @id @default(autoincrement())
   apiKeyId     Int

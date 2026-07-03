@@ -54,8 +54,7 @@ exports.getServiceAnalytics = asyncHandler(async (req, res) => {
 });
 
 exports.getUserAnalytics = asyncHandler(async (req, res) => {
-    // Get all users, including their API keys and the request logs count for those keys
-    const users = await prisma.user.findMany({
+     const users = await prisma.user.findMany({
         include: {
             apiKeys: {
                 select: {
@@ -70,8 +69,7 @@ exports.getUserAnalytics = asyncHandler(async (req, res) => {
     });
 
     const result = users.map((u) => {
-        // Calculate the sum of all requests across all API keys for this user
-        const totalRequests = u.apiKeys.reduce((sum, key) => sum + (key.requestLogs?.length || 0), 0);
+         const totalRequests = u.apiKeys.reduce((sum, key) => sum + (key.requestLogs?.length || 0), 0);
 
         return {
             id: u.id,
@@ -89,14 +87,12 @@ exports.getUserAnalytics = asyncHandler(async (req, res) => {
 
 
 exports.getErrorAnalytics = asyncHandler(async (req, res) => {
-    // Get total requests per service
-    const totalRequestsData = await prisma.requestLog.groupBy({
+     const totalRequestsData = await prisma.requestLog.groupBy({
         by: ["serviceId"],
         _count: { id: true }
     });
 
-    // Get failed requests per service
-    const serviceData = await prisma.requestLog.groupBy({
+     const serviceData = await prisma.requestLog.groupBy({
         by: ["serviceId"],
         where: {
             status: {

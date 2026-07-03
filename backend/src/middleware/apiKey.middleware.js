@@ -30,7 +30,6 @@ const apiKeyMiddleware = async (req, res, next) => {
         return res.status(403).send("Invalid api key");
     }
 
-    // const serviceId = req.serviceId;
     const serviceId = service.id;
     req.serviceId = serviceId;
 

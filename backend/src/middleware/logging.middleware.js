@@ -9,8 +9,7 @@ const loggerMiddleware = async (req, res, next) => {
 
       const responseTime = Date.now() - start;
 
-      // Log to ApiLog (for raw response logs)
-      await prisma.apiLog.create({
+       await prisma.apiLog.create({
         data: {
           apiKeyId: req.apiKey.id,
           serviceId: req.serviceId,
@@ -19,8 +18,7 @@ const loggerMiddleware = async (req, res, next) => {
         }
       });
 
-      // Log to RequestLog (which is used by all dashboard analytics and charts)
-      await prisma.requestLog.create({
+       await prisma.requestLog.create({
         data: {
           apiKeyId: req.apiKey.id,
           serviceId: req.serviceId,
